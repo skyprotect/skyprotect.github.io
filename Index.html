@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trích Xuất Bài Viết</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+        button {
+            padding: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            white-space: pre-wrap;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h2>Nhập đường dẫn bài viết:</h2>
+    <textarea id="urlInput"></textarea>
+    <button onclick="fetchArticle()">Lấy nội dung</button>
+    <h2>Kết quả:</h2>
+    <pre id="output"></pre>
+
+    <script>
+        async function fetchArticle() {
+            const url = document.getElementById("urlInput").value.trim();
+            if (!url) {
+                alert("Vui lòng nhập đường dẫn bài viết!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.contents, "text/html");
+
+                let title = doc.querySelector("h1").innerText.toUpperCase();
+                let paragraphs = [...doc.querySelectorAll(".article-content p")]
+                    .map(p => p.innerText)
+                    .filter(text => text.trim() !== "")
+                    .join("\n\n");
+                
+                let author = doc.querySelector(".author")?.innerText || "Không rõ";
+                let source = "Báo Quân đội nhân dân"; // Có thể thay đổi nếu nguồn khác
+                
+                let formattedText = `${title}\n\n${paragraphs}\n\n./.#TQS\n\nTác giả: ${author}\nNguồn: ${source}`;
+                
+                document.getElementById("output").innerText = formattedText;
+            } catch (error) {
+                document.getElementById("output").innerText = "Không thể lấy nội dung bài viết.";
+            }
+        }
+    </script>
+</body>
+</html>
